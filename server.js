@@ -9,7 +9,7 @@ server.on('connection', (socket) => {
     console.log('Nuevo cliente conectado');
     clients.push(socket);
 
-    // Enviar la actualización de usuarios a TODOS al conectar
+    // Enviar actualización de usuarios a todos los clientes conectados
     broadcastUserCount();
 
     socket.on('message', (message) => {
@@ -19,7 +19,7 @@ server.on('connection', (socket) => {
 
             // Reenviar el mensaje a todos los clientes conectados
             clients.forEach((client) => {
-                if (client.readyState === WebSocket.OPEN) {
+                if (client !== socket && client.readyState === WebSocket.OPEN) {
                     client.send(JSON.stringify(data));
                 }
             });
@@ -31,16 +31,14 @@ server.on('connection', (socket) => {
     socket.on('close', () => {
         console.log('Cliente desconectado');
         clients = clients.filter((client) => client !== socket);
-
-        // Enviar la actualización de usuarios a TODOS al desconectar
         broadcastUserCount();
     });
 });
 
-// Función para enviar la cantidad de usuarios conectados
+// Función para enviar la cantidad de usuarios conectados a todos los clientes
 function broadcastUserCount() {
     const userCount = clients.length;
-    console.log(`Usuarios conectados: ${userCount}`); // Verificar en logs
+    console.log(`Usuarios conectados: ${userCount}`); // Para verificar en logs
 
     clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
