@@ -40,9 +40,10 @@ server.on('connection', (socket) => {
 
 // Función para enviar la cantidad de usuarios conectados a todos los clientes
 function broadcastUserCount() {
-    const userCount = clients.length;
-    console.log(`Usuarios conectados: ${userCount}`);
+    const userCount = clients.length; // Calcula el número de clientes conectados
+    console.log(`Usuarios conectados: ${userCount}`); // Log para verificar
 
+    // Envía el número de usuarios conectados a todos los clientes
     clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
             client.send(JSON.stringify({ type: 'updateUsers', count: userCount }));
