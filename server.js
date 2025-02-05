@@ -1,15 +1,18 @@
 const WebSocket = require('ws');
 
+// Usar el puerto asignado dinámicamente o un puerto de respaldo para desarrollo local
 const port = process.env.PORT || 3000;
+
 const server = new WebSocket.Server({ port });
 
 let clients = [];
 
+// Cuando un cliente se conecta
 server.on('connection', (socket) => {
     console.log('Nuevo cliente conectado');
     clients.push(socket);
 
-    // Enviar actualización de usuarios a todos los clientes conectados
+    // Enviar actualización de usuarios conectados
     broadcastUserCount();
 
     socket.on('message', (message) => {
@@ -19,7 +22,7 @@ server.on('connection', (socket) => {
 
             // Reenviar el mensaje a todos los clientes conectados
             clients.forEach((client) => {
-                if (client !== socket && client.readyState === WebSocket.OPEN) {
+                if (client.readyState === WebSocket.OPEN) {
                     client.send(JSON.stringify(data));
                 }
             });
@@ -38,7 +41,7 @@ server.on('connection', (socket) => {
 // Función para enviar la cantidad de usuarios conectados a todos los clientes
 function broadcastUserCount() {
     const userCount = clients.length;
-    console.log(`Usuarios conectados: ${userCount}`); // Para verificar en logs
+    console.log(`Usuarios conectados: ${userCount}`);
 
     clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
