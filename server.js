@@ -1,6 +1,5 @@
 const WebSocket = require('ws');
 
-// Usa el puerto asignado por Railway o un puerto predeterminado para pruebas locales
 const port = process.env.PORT || 3000;
 const server = new WebSocket.Server({ port });
 
@@ -10,9 +9,11 @@ server.on('connection', (socket) => {
     console.log('Nuevo cliente conectado');
     clients.push(socket);
 
+    // Enviar actualización de usuarios conectados a todos
+    broadcastUserCount();
+
     socket.on('message', (message) => {
         try {
-            // Convertir el Buffer recibido en texto
             const data = JSON.parse(message.toString());
             console.log('Mensaje recibido:', data);
 
@@ -30,7 +31,18 @@ server.on('connection', (socket) => {
     socket.on('close', () => {
         console.log('Cliente desconectado');
         clients = clients.filter((client) => client !== socket);
+        broadcastUserCount();
     });
 });
+
+// Función para enviar la cantidad de usuarios conectados
+function broadcastUserCount() {
+    const userCount = clients.length;
+    clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({ type: 'updateUsers', count: userCount }));
+        }
+    });
+}
 
 console.log(`Servidor WebSocket corriendo en el puerto ${port}`);
